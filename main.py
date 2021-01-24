@@ -4,12 +4,14 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, Response, request
-
+from flask import Flask, Response, request, abort
 
 app = Flask(__name__, static_folder=None, template_folder=None)
 
-defaultDomain = "discord.com"
+HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT',
+                'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
+
+defaultDomain = "facebook.com"
 linkAttr = {"href": {"href": True},
             "src": {"src": True},
             "action": {"action": True},
@@ -44,6 +46,8 @@ corsHandlerScript = open("utils/cors_handler.js", "r").read()
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+session = requests.Session()
+
 
 def clearLink(link):
     url = urlparse(link)
@@ -61,7 +65,7 @@ def cssRegex(match):
     return f"url({clearLink(match.group(1))})"
 
 
-@app.route('/', defaults={'path': ''})
+@app.route('/', defaults={'path': ''}, methods=HTTP_METHODS)
 @app.route('/<path:path>')
 def home(path):
     if request.args.get("targetDomain") == None:
@@ -77,37 +81,48 @@ def home(path):
     qs.pop("targetDomain", None)
     url = url._replace(query=urlencode(qs))
 
-    # ? GET
-    try:
-        reqUrl = request.scheme + "://" + domain.replace(
-            "http://", "").replace("https://", "") + urlunparse(url).replace("%5B", "").replace("%5D", "").replace("%27", "")
-        r = requests.get(reqUrl)
-    except Exception as err:
-        print("ERROR -> " + str(err))
-        return str(err)
+    reqUrl = request.scheme + "://" + domain.replace(
+        "http://", "").replace("https://", "") + urlunparse(url).replace("%5B", "").replace("%5D", "").replace("%27", "")
 
-    doc = r.content
-    requestMimeType = r.headers.get('content-type', '')
+    if request.method == "GET":  # ? GET Requests
+        try:
+            r = session.get(reqUrl)
+        except Exception as err:
+            print("ERROR -> " + str(err))
+            return str(err)
 
-    # ? Modify all href and src attrs
-    if "text/html" in requestMimeType:
-        soup = BeautifulSoup(doc, 'html.parser')
+        doc = r.content
+        requestMimeType = r.headers.get('content-type', '')
 
-        # ? Injecting CORS Handler for JS XMLHttpRequests
-        corsHandler = soup.new_tag("script")
-        corsHandler.string = corsHandlerScript
-        soup.head.insert(0, corsHandler)
+        # ? Modify all href and src attrs
+        if "text/html" in requestMimeType:
+            soup = BeautifulSoup(doc, 'html.parser')
 
-        for attr in linkAttr:
-            for tag in soup.findAll(**linkAttr[attr]):
-                tag[attr] = clearLink(tag[attr])
-        for style in soup.findAll("style"):
-            style.string = re.sub(r'url\((.*?)\)', cssRegex, style.string)
-        doc = str(soup)
-    elif "text/css" in requestMimeType:
-        css = re.sub(r'url\((.*?)\)', cssRegex, doc.decode("utf8"))
-        doc = css.encode("utf8")
+            # ? Injecting CORS Handler for JS XMLHttpRequests
+            if soup.head == None:
+                soup.insert(0, soup.new_tag("head"))
+            corsHandler = soup.new_tag("script")
+            corsHandler.string = corsHandlerScript
+            soup.head.insert(0, corsHandler)
 
+            for attr in linkAttr:
+                for tag in soup.findAll(**linkAttr[attr]):
+                    tag[attr] = clearLink(tag[attr])
+            for style in soup.findAll("style"):
+                if style.string == None:
+                    style.string = ""
+                style.string = re.sub(r'url\((.*?)\)', cssRegex, style.string)
+            doc = str(soup)
+        elif "text/css" in requestMimeType:
+            css = re.sub(r'url\((.*?)\)', cssRegex, doc.decode("utf8"))
+            doc = css.encode("utf8")
+    elif request.method == "POST":  # ? POST Requests
+        r = requests.post(reqUrl, data=request.form)
+        requestMimeType = r.headers.get('content-type', '')
+        doc = r.content
+    else:  # ? Unsupported method
+        print("UNSUPPORTED:", request.method)
+        abort(405)
     return Response(doc, mimetype=requestMimeType)
 
 
