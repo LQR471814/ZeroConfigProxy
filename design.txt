@@ -1,0 +1,9 @@
+Things Required to Spoof Serverside:
+HTML
+CSS
+HTTP Headers
+WebRTC leaks
+
+Things that can be spoofed Clientside (JS):
+JS XMLHttpRequest and window.fetch
+
