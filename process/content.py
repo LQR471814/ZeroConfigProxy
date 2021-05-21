@@ -26,9 +26,13 @@ def process_html(content: bytes, req_context: RequestContext) -> str:
     corsHandler.string = jsRequestHandler
     soup.head.insert(0, corsHandler)
 
-    for attr in linkAttr:
-        for tag in soup.findAll(**linkAttr[attr]):
-            tag[attr] = spoof_url(tag[attr], req_context)
+    for searchObj in linkAttr:
+        for tag in soup.findAll(**searchObj):
+            for attr in searchObj:
+                tag[attr] = spoof_url(tag[attr], req_context)
+            if tag.name == 'img':
+                if tag.get('srcset'):
+                    del tag['srcset']
 
     for style in soup.findAll('style'):
         if style.string == None:
