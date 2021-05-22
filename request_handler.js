@@ -1,16 +1,3 @@
-var originalImageConstructor = Image
-
-// Image = function() {
-// 	return {
-// 		...new originalImageConstructor(arguments),
-// 		set src(newValue) {
-// 			this.src = construct_spoofed_request(
-// 				(!newValue instanceof URL) ? newValue : newValue.toString()
-// 			)
-// 		}
-// 	}
-// }
-
 function construct_spoofed_request(original_url) {
 	return `${window.origin}/Request?targetUrl=${encodeURIComponent(normalizeUrl(original_url))}`
 }
