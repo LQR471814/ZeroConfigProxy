@@ -48,6 +48,7 @@ def spoof_url(url: str, req_context: RequestContext) -> str:
     def normalize_url(target_url: str):
         result = target_url
         result.replace('www.', '') #? Remove www.
+
         if result.split('/')[0] == default_domain: #? Check if first segment of 'path' is the default_domain
             result = f'{default_scheme}://' + result #? Add http(s):// in front if it is a url like (www.google.com/path)
         return result
