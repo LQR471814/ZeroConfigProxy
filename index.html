@@ -34,7 +34,7 @@
 
         <div style="display: flex">
             <input size="50" type="text" id="input_box">
-            <button onclick="requestPage()">Request</button>
+            <button id="submit_button">Request</button>
         </div>
     </div>
 
@@ -45,6 +45,16 @@
                 encodeURIComponent(normalizeUrl(url))
             }`
         }
+
+        function inputKeyHandler(e) {
+            console.log(e)
+            if (e.code === "Enter") {
+                requestPage()
+            }
+        }
+
+        document.getElementById("submit_button").onclick = requestPage
+        document.getElementById("input_box").onkeydown = inputKeyHandler
     </script>
 </body>
 

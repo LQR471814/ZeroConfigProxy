@@ -14,7 +14,11 @@ def make_typed_response(content, mimetype):
     return response
 
 def process_get(req_context: RequestContext) -> str:
-    data = requests.get(req_context.target_url)
+    try:
+        data = requests.get(req_context.target_url)
+    except:
+        return f"Server failed to request {req_context.target_url}. Is this a valid URL?"
+
     data_mimetype = data.headers.get('content-type', '')
 
     if 'text/html' in data_mimetype:
