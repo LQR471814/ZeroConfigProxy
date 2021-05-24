@@ -8,9 +8,6 @@ from common.types import *
 from process.request import *
 from utils.parsing_utils import *
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-
 homepage = open("index.html", "r").read()
 homepage = homepage.replace("\"INSERT_NORMALIZE_URL\"", normalizeUrlScript)
 
