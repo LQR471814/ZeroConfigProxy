@@ -1,3 +1,4 @@
+from flask.wrappers import Response
 import requests
 from common.html_definitions import *
 from common.types import *
@@ -13,7 +14,7 @@ def make_typed_response(content, mimetype):
     response.headers['content-type'] = mimetype
     return response
 
-def process_get(req_context: RequestContext) -> str:
+def process_get(req_context: RequestContext) -> Response:
     try:
         data = requests.get(req_context.target_url)
     except:
