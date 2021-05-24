@@ -5,7 +5,7 @@ from common.html_definitions import *
 from common.types import *
 from utils.parsing_utils import *
 
-jsRequestHandler = open('request_handler.js', 'r').read()
+jsRequestHandlerScript = open('request_handler.js', 'r').read()
 normalizeUrlScript = open('normalize_url.js', 'r').read()
 
 def process_css(content: str, req_context: RequestContext) -> str:
@@ -20,11 +20,12 @@ def process_html(content: bytes, req_context: RequestContext) -> str:
         soup.insert(0, soup.new_tag('head'))
 
     normalize_url_module = soup.new_tag('script')
-    normalize_url_module
+    normalize_url_module.string = normalizeUrlScript
+    soup.head.insert(0, normalize_url_module)
 
-    corsHandler = soup.new_tag('script')
-    corsHandler.string = jsRequestHandler
-    soup.head.insert(0, corsHandler)
+    jsRequestHandler = soup.new_tag('script')
+    jsRequestHandler.string = jsRequestHandlerScript
+    soup.head.insert(0, jsRequestHandler)
 
     for searchObj in linkAttr:
         for tag in soup.findAll(**searchObj):

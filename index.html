@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home</title>
+    <style>
+        body {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            height: 65vh;
+        }
+
+        h1 {
+            font-size: 50px;
+        }
+
+        input {
+            padding: 7px
+        }
+
+        button {
+            margin-left: 5px;
+        }
+    </style>
+    <script>"INSERT_NORMALIZE_URL"</script>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <h1>Request a URL</h1>
+
+        <div style="display: flex">
+            <input size="50" type="text" id="input_box">
+            <button onclick="requestPage()">Request</button>
+        </div>
+    </div>
+
+    <script>
+        function requestPage(e) {
+            const url = document.getElementById("input_box").value
+            window.location.href = `Request?targetUrl=${
+                encodeURIComponent(normalizeUrl(url))
+            }`
+        }
+    </script>
+</body>
+
+</html>

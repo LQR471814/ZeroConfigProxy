@@ -11,12 +11,15 @@ from utils.parsing_utils import *
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
+homepage = open("index.html", "r").read()
+homepage = homepage.replace("\"INSERT_NORMALIZE_URL\"", normalizeUrlScript)
+
 app = Flask(__name__, static_folder=None, template_folder=None)
 
 #? When user initializes request
 @app.route('/')
 def home():
-    return 'Use path /Request with ?targetUrl for now'
+    return homepage
 
 #? When other requests come in
 @app.route('/Request', methods=HTTP_METHODS)
